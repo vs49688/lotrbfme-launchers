@@ -54,7 +54,7 @@ void show_error_box(LPCWSTR msg)
 	MessageBoxW(nullptr, msg, s_message_box_title, MB_OK | MB_ICONERROR);
 }
 
-int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 	std::wstring progDir = get_executable_directory();
 
@@ -106,7 +106,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 		ZeroMemory(&pi, sizeof(pi));
 	}
 
-	if(!CreateProcessW(L"game.dat", lpCmdLine, nullptr, nullptr, TRUE, 0 /*CREATE_SUSPENDED*/, nullptr, nullptr, &si, &pi))
+	if(!CreateProcessW(L"game.dat", GetCommandLineW(), nullptr, nullptr, TRUE, 0 /*CREATE_SUSPENDED*/, nullptr, nullptr, &si, &pi))
 	{
 		show_error_box(L"Error launching game executable.");
 		return -1;
