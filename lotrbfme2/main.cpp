@@ -1,5 +1,4 @@
 #include <memory>
-#include <string>
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -9,15 +8,6 @@ struct handle_deleter
 	void operator()(HANDLE h) { CloseHandle(h); }
 };
 using handle_ptr = std::unique_ptr<std::remove_pointer<HANDLE>::type, handle_deleter>;
-
-static std::wstring get_executable_directory(void)
-{
-	wchar_t *pgmPtr;
-	_get_wpgmptr(&pgmPtr);
-
-	std::wstring w(pgmPtr);
-	return w.substr(0, w.find_last_of(L"/\\"));
-}
 
 static handle_ptr setup_file_payload(void)
 {
@@ -54,15 +44,47 @@ void show_error_box(LPCWSTR msg)
 	MessageBoxW(nullptr, msg, s_message_box_title, MB_OK | MB_ICONERROR);
 }
 
+static LPWSTR get_executable_directory(void)
+{
+	HMODULE hThis = GetModuleHandleW(nullptr);
+	HANDLE hHeap = GetProcessHeap();
+
+	DWORD dwSize = MAX_PATH;
+	LPWSTR p = reinterpret_cast<LPWSTR>(HeapAlloc(hHeap, 0, dwSize * sizeof(WCHAR)));
+	if(!p)
+		return nullptr;
+
+	DWORD dwRet = 0;
+	while((dwRet = GetModuleFileNameW(hThis, p, dwSize)) == dwSize)
+	{
+		dwSize *= 2;
+		if(!(p = reinterpret_cast<LPWSTR>(HeapReAlloc(hHeap, 0, p, dwSize * sizeof(WCHAR)))))
+			return nullptr;
+	}
+
+	LPWSTR end = wcsrchr(p, '\\');
+	if(end)
+		*end = L'\0';
+
+	return p;
+}
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	std::wstring progDir = get_executable_directory();
-
-	if(!SetCurrentDirectoryW(progDir.c_str()))
+	LPWSTR progDir = get_executable_directory();
+	if(progDir == nullptr)
 	{
+		show_error_box(L"Error getting executable directory.");
+		return -1;
+	}
+
+	if(!SetCurrentDirectoryW(progDir))
+	{
+		HeapFree(GetProcessHeap(), 0, progDir);
 		show_error_box(L"Error setting current directory.");
 		return -1;
 	}
+	HeapFree(GetProcessHeap(), 0, progDir);
 
 	handle_ptr hFile = setup_file_payload();
 	if(hFile == nullptr)
