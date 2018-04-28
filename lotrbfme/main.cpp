@@ -8,7 +8,7 @@ struct handle_deleter
 {
 	void operator()(HANDLE h) { CloseHandle(h); }
 };
-using handle_ptr = std::unique_ptr<std::remove_pointer_t<HANDLE>, handle_deleter>;
+using handle_ptr = std::unique_ptr<std::remove_pointer<HANDLE>::type, handle_deleter>;
 
 static std::wstring get_executable_directory(void)
 {
