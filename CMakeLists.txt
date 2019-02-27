@@ -5,8 +5,8 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 enable_language(C CXX)
 
-set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED TRUE)
 
 if(MSVC)
 	set(CompilerFlags
@@ -27,7 +27,7 @@ if(MSVC)
 	endforeach()
 endif()
 
-set(LAUNCHER_FILES launcher.cpp launcher.h)
+set(LAUNCHER_FILES launcher.c launcher.h)
 
 add_executable(lotrbfme WIN32
 	${LAUNCHER_FILES}
