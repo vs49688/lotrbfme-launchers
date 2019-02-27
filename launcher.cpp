@@ -3,17 +3,28 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+#include "launcher.h"
+
+/* Make them symbols as we need the size. */
+constexpr const wchar_t GameName[] = LOTRBFME_GAME_NAME;
+constexpr const char G1[] = LOTRBFME_G1;
+constexpr const char G2[] = LOTRBFME_G2;
+constexpr const char G3[] = LOTRBFME_G3;
+constexpr const char G4[] = LOTRBFME_G4;
+
+static_assert(sizeof(G1) == 36 + 1, "invalid G1 size");
+static_assert(sizeof(G2) == 36 + 1, "invalid G2 size");
+static_assert(sizeof(G3) == 36 + 1, "invalid G3 size");
+static_assert(sizeof(G4) == 36 + 1, "invalid G4 size");
+
 struct handle_deleter
 {
 	void operator()(HANDLE h) { CloseHandle(h); }
 };
 using handle_ptr = std::unique_ptr<std::remove_pointer<HANDLE>::type, handle_deleter>;
 
-static handle_ptr setup_file_payload(void)
+static handle_ptr setup_file_payload()
 {
-	constexpr const char payload[] = "B966C0E5-16AC-4ebd-90AC-D7A8C8976040";
-	static_assert(sizeof(payload) == 36 + 1, "sizeof(payload) != 36 + 1");
-
 	handle_ptr hFile;
 	{
 		SECURITY_ATTRIBUTES attributes;
@@ -22,7 +33,7 @@ static handle_ptr setup_file_payload(void)
 		attributes.lpSecurityDescriptor = 0;
 		attributes.bInheritHandle = 1;
 
-		hFile.reset(CreateFileMappingA(INVALID_HANDLE_VALUE, &attributes, PAGE_READWRITE, 0, sizeof(payload) - 1, nullptr));
+		hFile.reset(CreateFileMappingA(INVALID_HANDLE_VALUE, &attributes, PAGE_READWRITE, 0, sizeof(G4) - 1, nullptr));
 	}
 
 	if(!hFile)
@@ -32,7 +43,7 @@ static handle_ptr setup_file_payload(void)
 	if(!ptr)
 		return nullptr;
 
-	memcpy(ptr, payload, sizeof(payload) - 1);
+	memcpy(ptr, G4, sizeof(G4) - 1);
 
 	UnmapViewOfFile(ptr);
 	return hFile;
@@ -40,11 +51,10 @@ static handle_ptr setup_file_payload(void)
 
 void show_error_box(LPCWSTR msg)
 {
-	static const wchar_t s_message_box_title[] = L"The Battle for Middle-earth";
-	MessageBoxW(nullptr, msg, s_message_box_title, MB_OK | MB_ICONERROR);
+	MessageBoxW(nullptr, msg, GameName, MB_OK | MB_ICONERROR);
 }
 
-static LPWSTR get_executable_directory(void)
+static LPWSTR get_executable_directory()
 {
 	HMODULE hThis = GetModuleHandleW(nullptr);
 	HANDLE hHeap = GetProcessHeap();
@@ -93,21 +103,25 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		return -1;
 	}
 
-	/* game.dat seems to need this to start. */
-	handle_ptr hMutex(CreateMutexA(nullptr, FALSE, "46EB79F1-5924-4375-AE1E-1C3C36C7AC4D"));
+	handle_ptr hMutex(CreateMutexA(nullptr, FALSE, G1));
 	if(hMutex == nullptr)
 	{
-		show_error_box(L"Error creating mutex.");
+		DWORD dwErr = GetLastError();
+		if(dwErr == ERROR_ALREADY_EXISTS)
+			show_error_box(L"Game already running.");
+		else
+			show_error_box(L"Error creating mutex.");
 		return -1;
 	}
 
 	/* Create the event to trigger game.dat */
-	handle_ptr hEvent(CreateEventA(0, 0, 0, "CA5F8EE2-0630-4ef3-BD73-D71F832CD25F"));
+	handle_ptr hEvent(CreateEventA(0, 0, 0, G3));
 	if(hEvent == nullptr)
 	{
 		show_error_box(L"Error creating event.");
 		return -1;
 	}
+
 
 	STARTUPINFOW si;
 	{
@@ -149,3 +163,4 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	return result ? exitCode : -1;
 }
+

@@ -27,5 +27,25 @@ if(MSVC)
 	endforeach()
 endif()
 
-add_subdirectory(lotrbfme)
-add_subdirectory(lotrbfme2)
+set(LAUNCHER_FILES launcher.cpp launcher.h)
+
+add_executable(lotrbfme WIN32
+	${LAUNCHER_FILES}
+	./lotrbfme.rc
+	./lotrbfme.ico
+)
+target_compile_definitions(lotrbfme PUBLIC LOTRBFME_GAME=1)
+
+add_executable(lotrbfme2 WIN32
+	${LAUNCHER_FILES}
+	./lotrbfme2.rc
+	./lotrbfme2.ico
+)
+target_compile_definitions(lotrbfme2 PUBLIC LOTRBFME_GAME=2)
+
+add_executable(lotrbfme2ep1 WIN32
+	${LAUNCHER_FILES}
+	./lotrbfme2ep1.rc
+	./lotrbfme2ep1.ico
+)
+target_compile_definitions(lotrbfme2ep1 PUBLIC LOTRBFME_GAME=3)

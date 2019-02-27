@@ -1,2 +1,5 @@
 **/build/
 **/*.aps
+**/.idea/
+/cmake-build-*
+
