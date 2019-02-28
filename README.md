@@ -106,7 +106,13 @@ The `G1-G4` values are the same.
 
 ## Other notes
 
-### [RotWK] setup
+### [RotWK] Manual Installation
+Just extract `0compressed.zip` and `0en-uk_compressed.zip` to the same folder.
+The file names have embedded '\\' in them, but the standard `unzip` on Linux utility seems to handle this fine.
+
+Also copy `gi.dat` to the same folder.
+
+### [RotWK] Setup
 RotWK needs BFME2 installed to run. It uses `HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\App Paths\lotrbfme2.exe`
 to determine the game path and looks for the following files:
 * eauninstall.exe

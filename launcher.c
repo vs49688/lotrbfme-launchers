@@ -3,15 +3,8 @@
 
 #include "launcher.h"
 
-/* Make them symbols as we need the size. */
-static const char G1[] = LOTRBFME_G1;
-static const char G2[] = LOTRBFME_G2;
-static const char G3[] = LOTRBFME_G3;
+/* Make this a symbol as we need its size.. */
 static const char G4[] = LOTRBFME_G4;
-
-//static_assert(sizeof(G1) == 36 + 1, "invalid G1 size");
-//static_assert(sizeof(G2) == 36 + 1, "invalid G2 size");
-//static_assert(sizeof(G3) == 36 + 1, "invalid G3 size");
 //static_assert(sizeof(G4) == 36 + 1, "invalid G4 size");
 
 static HANDLE setup_file_payload(void)
@@ -102,7 +95,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	HANDLE hMutex = NULL;
 	HANDLE hEvent = NULL;
 
-	if(!(hMutex = CreateMutexA(NULL, FALSE, G1)))
+	if(!(hMutex = CreateMutexA(NULL, FALSE, LOTRBFME_G1)))
 	{
 		DWORD dwErr = GetLastError();
 		if(dwErr == ERROR_ALREADY_EXISTS)
@@ -114,7 +107,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 
 	/* Create the event to trigger game.dat */
-	if(!(hEvent = CreateEventA(0, 0, 0, G3)))
+	if(!(hEvent = CreateEventA(0, 0, 0, LOTRBFME_G3)))
 	{
 		show_error_box(L"Error creating event.");
 		goto create_event_fail;
