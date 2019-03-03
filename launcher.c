@@ -3,7 +3,7 @@
 
 #include "launcher.h"
 
-/* Make this a symbol as we need its size.. */
+/* Make these sumbols as we need their sizes. */
 static const char G4[] = LOTRBFME_G4;
 //static_assert(sizeof(G4) == 36 + 1, "invalid G4 size");
 
@@ -34,7 +34,7 @@ static HANDLE setup_file_payload(void)
 
 static void show_error_box(LPCWSTR msg)
 {
-	MessageBoxW(NULL, msg, LOTRBFME_GAME_NAME, MB_OK | MB_ICONERROR);
+	MessageBoxW(NULL, msg, LOTRBFME_SKUNAME, MB_OK | MB_ICONERROR);
 }
 
 static LPWSTR get_executable_directory()
@@ -66,6 +66,7 @@ static LPWSTR get_executable_directory()
 	return p;
 }
 
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 	LPWSTR progDir = get_executable_directory();
@@ -81,6 +82,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		show_error_box(L"Error setting current directory.");
 		return 1;
 	}
+
 	HeapFree(GetProcessHeap(), 0, progDir);
 
 	HANDLE hFile = setup_file_payload();
