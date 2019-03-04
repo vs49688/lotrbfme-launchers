@@ -51,3 +51,4 @@ add_executable(lotrbfme2ep1 WIN32
 target_compile_definitions(lotrbfme2ep1 PUBLIC LOTRBFME_GAME=3)
 
 add_executable(fixinst fixinst.c)
+target_link_libraries(fixinst shlwapi)

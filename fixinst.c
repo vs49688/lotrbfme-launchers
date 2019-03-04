@@ -3,26 +3,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <shlobj.h>
+#include <shlwapi.h>
 
 #include "launcher.h"
 
 static LPWSTR get_executable_directory()
 {
 	HMODULE hThis = GetModuleHandleW(NULL);
-	HANDLE hHeap = GetProcessHeap();
 
 	DWORD dwSize = MAX_PATH;
-	LPWSTR p = HeapAlloc(hHeap, 0, dwSize * sizeof(WCHAR));
+	LPWSTR p = malloc(dwSize * sizeof(WCHAR));
 	if(!p)
 		return NULL;
 
 	while(GetModuleFileNameW(hThis, p, dwSize) == dwSize)
 	{
 		dwSize *= 2;
-		LPWSTR np = HeapReAlloc(hHeap, 0, p, dwSize * sizeof(WCHAR));
+		LPWSTR np = realloc(p, dwSize * sizeof(WCHAR));
 		if(!np)
 		{
-			HeapFree(hHeap, 0, p);
+			free(p);
 			return NULL;
 		}
 		p = np;
@@ -38,11 +38,6 @@ static LPWSTR get_executable_directory()
 static void usage(const char *argv0)
 {
 	printf("Usage: %s [lotrbfme|lotrbfme2|lotrbfme2ep1]\n", argv0);
-}
-
-static const char *autodetect_game(const wchar_t *gamedir)
-{
-	return "lotrbfme2ep1";
 }
 
 enum kGame {
@@ -83,6 +78,47 @@ static wchar_t *joinpath(const wchar_t *p1, const wchar_t *p2, size_t *len)
 	if(len)
 		*len = _len;
 	return s;
+}
+
+/*
+ * Search for:
+ * lotrbfme2ep1.exe - RotWK
+ * lotrbfme2.exe    - BfME2
+ * lotrbfme.exe     - BfME
+ */
+static const char *autodetect_game(const wchar_t *gamedir)
+{
+	wchar_t *launcher_path = joinpath(gamedir, L"lotrbfme2ep1.exe", NULL);
+	if(!launcher_path)
+		return NULL;
+
+	size_t baselen = wcslen(gamedir) + 1; /* including '\\' */
+
+	const char *sku = NULL;
+
+	if(PathFileExistsW(launcher_path))
+	{
+		sku = "lotrbfme2ep1";
+		goto done;
+	}
+
+	wcscpy(launcher_path + baselen, L"lotrbfme2.exe");
+	if(PathFileExistsW(launcher_path))
+	{
+		sku = "lotrbfme2";
+		goto done;
+	}
+
+	wcscpy(launcher_path + baselen, L"lotrbfme.exe");
+	if(PathFileExistsW(launcher_path))
+	{
+		sku = "lotrbfme";
+		goto done;
+	}
+
+done:
+	free(launcher_path);
+	return sku;
 }
 
 void gameinfo_release(gameinfo_t *gi)
@@ -299,8 +335,8 @@ int main(int argc, char **argv)
 
 	if(!ssku)
 	{
-		HeapFree(GetProcessHeap(), 0, progDir);
 		fprintf(stderr, "Unable to determine SKU, exiting...\n");
+		free(progDir);
 		return 1;
 	}
 
@@ -314,8 +350,8 @@ int main(int argc, char **argv)
 
 	if(game == GAME_NONE)
 	{
-		HeapFree(GetProcessHeap(), 0, progDir);
 		fprintf(stderr, "Invalid SKU, exiting...\n");
+		free(progDir);
 		return 1;
 	}
 
@@ -324,11 +360,11 @@ int main(int argc, char **argv)
 	gameinfo_t gi;
 	if(gameinfo_build(game, &gi, progDir) != &gi)
 	{
-		HeapFree(GetProcessHeap(), 0, progDir);
 		fprintf(stderr, "Error building game strings, exiting...\n");
+		free(progDir);
 		return 1;
 	}
-	HeapFree(GetProcessHeap(), 0, progDir);
+	free(progDir);
 
 	printf("  paths.game_dir     = %ls\n", gi.paths.game_dir);
 	printf("  paths.launcher_exe = %ls\n", gi.paths.launcher_exe);
