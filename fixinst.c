@@ -373,7 +373,6 @@ int main(int argc, char **argv)
 	printf("  registry.app_path  = %ls\n", gi.registry.app_path);
 	printf("  registry.game      = %ls\n", gi.registry.game);
 
-	return 0;
 	if(!fix_registry(&gi))
 		fprintf(stderr, "Error fixing registry...\n");
 
