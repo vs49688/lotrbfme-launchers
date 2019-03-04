@@ -37,6 +37,15 @@ static void show_error_box(LPCWSTR msg)
 	MessageBoxW(NULL, msg, LOTRBFME_SKUNAME, MB_OK | MB_ICONERROR);
 }
 
+static LPWSTR lstrrchrW(LPCWSTR s, WCHAR c)
+{
+	LPCWSTR p;
+	for(p = s + lstrlenW(s); p >= s && *p != c; p--)
+		;
+
+	return p >= s ? (LPWSTR)p : 0;
+}
+
 static LPWSTR get_executable_directory()
 {
 	HMODULE hThis = GetModuleHandleW(NULL);
@@ -59,7 +68,7 @@ static LPWSTR get_executable_directory()
 		p = np;
 	}
 
-	LPWSTR end = wcsrchr(p, '\\');
+	LPWSTR end = lstrrchrW(p, '\\');
 	if(end)
 		*end = L'\0';
 

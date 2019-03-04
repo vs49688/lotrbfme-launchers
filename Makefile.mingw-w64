@@ -1,0 +1,38 @@
+# In case CMake's being a shit
+CC=i686-w64-mingw32-gcc
+STRIP=i686-w64-mingw32-strip
+WINDRES=i686-w64-mingw32-windres
+
+LAUNCHER_FLAGS=-static -DNDEBUG -Os -mwindows --entry _WinMain@16 -nostdlib -lkernel32 -luser32
+
+all: lotrbfme.exe lotrbfme2.exe lotrbfme2ep1.exe fixinst.exe
+
+lotrbfme-res.o: ../lotrbfme.rc ../lotrbfme.ico
+	${WINDRES} $< -O coff $@
+
+lotrbfme2-res.o: ../lotrbfme2.rc ../lotrbfme2.ico
+	${WINDRES} $< -O coff $@
+
+lotrbfme2ep1-res.o: ../lotrbfme2ep1.rc ../lotrbfme2ep1.ico
+	${WINDRES} $< -O coff $@
+
+lotrbfme.exe: ../launcher.c ../launcher.h lotrbfme-res.o
+	${CC}  -o $@ -DLOTRBFME_GAME=1 $^ ${LAUNCHER_FLAGS}
+	${STRIP} -s $@
+
+lotrbfme2.exe: ../launcher.c ../launcher.h lotrbfme2-res.o
+	${CC} -o $@ -DLOTRBFME_GAME=2 $^ ${LAUNCHER_FLAGS}
+	${STRIP} -s $@
+
+lotrbfme2ep1.exe: ../launcher.c ../launcher.h lotrbfme2ep1-res.o
+	${CC} -o $@ -DLOTRBFME_GAME=3 $^ ${LAUNCHER_FLAGS}
+	${STRIP} -s $@
+
+fixinst.exe: ../fixinst.c ../launcher.h
+	${CC} -o $@ $^ -Os -mconsole -lshlwapi
+	${STRIP} -s $@
+
+clean:
+	rm -f lotrbfme.exe lotrbfme2.exe lotrbfme2ep1.exe lotrbfme-res.o lotrbfme2-res.o lotrbfme2ep1-res.o fixinst.exe
+
+.PHONY: all clean
