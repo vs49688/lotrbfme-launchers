@@ -7,19 +7,19 @@
 
 #include "launcher.h"
 
-static LPWSTR get_executable_directory()
+static wchar_t *get_executable_directory()
 {
 	HMODULE hThis = GetModuleHandleW(NULL);
 
 	DWORD dwSize = MAX_PATH;
-	LPWSTR p = malloc(dwSize * sizeof(WCHAR));
+	wchar_t *p = malloc(dwSize * sizeof(wchar_t));
 	if(!p)
 		return NULL;
 
 	while(GetModuleFileNameW(hThis, p, dwSize) == dwSize)
 	{
 		dwSize *= 2;
-		LPWSTR np = realloc(p, dwSize * sizeof(WCHAR));
+		wchar_t * np = realloc(p, dwSize * sizeof(wchar_t));
 		if(!np)
 		{
 			free(p);
@@ -28,7 +28,7 @@ static LPWSTR get_executable_directory()
 		p = np;
 	}
 
-	LPWSTR end = wcsrchr(p, '\\');
+	wchar_t *end = wcsrchr(p, '\\');
 	if(end)
 		*end = L'\0';
 
@@ -373,6 +373,7 @@ int main(int argc, char **argv)
 	printf("  registry.app_path  = %ls\n", gi.registry.app_path);
 	printf("  registry.game      = %ls\n", gi.registry.game);
 
+	return 0;
 	if(!fix_registry(&gi))
 		fprintf(stderr, "Error fixing registry...\n");
 
